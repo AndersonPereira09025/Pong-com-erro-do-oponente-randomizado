@@ -1,0 +1,235 @@
+<canvas width="600" height="400"></canvas>
+
+<script>
+
+    var tela = document.querySelector('canvas');
+    var pincel = tela.getContext('2d');
+    pincel.fillStyle = 'black';
+    pincel.fillRect(0, 0, 600, 400);
+
+
+    function desenhaCirculo(xBolinha, yBolinha, raio) {
+
+        pincel.fillStyle = 'black';
+        pincel.beginPath();
+        pincel.arc(xBolinha, yBolinha, raio, 0, 2 * Math.PI);
+        pincel.fill();
+    }
+
+    function desenhaRaqueteJogador (xRaqueteJogador, yRaqueteJogador, larguraRaquete, alturaRaquete) {
+ 
+        pincel.fillStyle = "black";
+        pincel.fillRect(xRaqueteJogador, yRaqueteJogador, larguraRaquete, alturaRaquete);
+
+    }
+
+    function desenhaRaqueteAdversario (xRaqueteAdversario, yRaqueteAdversario, larguraRaquete, alturaRaquete) {
+ 
+        pincel.fillStyle = "black";
+        pincel.fillRect(xRaqueteAdversario, yRaqueteAdversario, larguraRaquete, alturaRaquete);
+
+    }
+
+    function desenhaPlacar (x, y, pontuacao){
+
+        pincel.fillStyle = "yellow"
+        pincel.fillRect(x, y, 80, 50);
+        pincel.fillStyle = "black";
+        pincel.font = "48px serif";
+        
+        if (pontuacao < 10){
+            pincel.fillText ("0"+ pontuacao, x + 18, y + 42);
+        } else {
+            pincel.fillText (pontuacao, x + 18, y + 42);
+        }
+        
+        pincel.strokeRect (x, y, 80, 50);
+        
+    }
+
+    function limpaTela() {
+
+        pincel.clearRect(0, 0, 600, 400);
+    }
+
+    function leDoTeclado(evento) {
+
+       var movimento = evento.keyCode
+       moveRaqueteJogador (movimento)
+    }
+
+    function moveRaqueteJogador (tecla) {
+
+        var velocidadeRaqueteJogador = 30
+
+        if (tecla == 38) {
+            
+            if (yRaqueteJogador <= 0) {
+
+                yRaqueteJogador = yRaqueteJogador - 0
+
+            } else {
+
+                yRaqueteJogador = yRaqueteJogador - velocidadeRaqueteJogador
+            }
+            
+        } if (tecla == 40) {
+            
+            if (yRaqueteJogador >= tela.getAttribute("height") - alturaRaquete) {
+
+                yRaqueteJogador = yRaqueteJogador + 0
+
+            } else {
+
+                yRaqueteJogador = yRaqueteJogador + 20
+            }
+        } 
+
+    }
+
+    function detectaColisaoBorda (){
+
+        if (yBolinha - raio < 0 || yBolinha + raio > tela.getAttribute("height")) {
+            
+            velocidadeY = velocidadeY*(-1);
+        }
+
+        if (xBolinha - raio < 0 || xBolinha + raio > tela.getAttribute("width")) {
+            
+            if (xBolinha - raio < 0){
+
+                velocidadeX = velocidadeX*(-1);
+                pontosAdversario += 1
+
+            }
+
+            if (xBolinha + raio > tela.getAttribute("width")){
+
+                velocidadeX = velocidadeX*(-1);
+                pontosJogador += 1
+
+            }          
+        }
+    }
+
+    function detectaColisaoRaqueteJogador() {
+
+          if (xBolinha - raio < xRaqueteJogador + larguraRaquete
+            && yBolinha - raio > yRaqueteJogador
+            && yBolinha + raio < yRaqueteJogador + alturaRaquete){
+
+            velocidadeX = velocidadeX*(-1);
+            numeroAleatorio = Math.random();
+            }
+    }
+
+    function detectaColisaoRaqueteAdversario() {
+
+          if (xBolinha + raio > xRaqueteAdversario
+            && yBolinha - raio > yRaqueteAdversario
+            && yBolinha + raio < yRaqueteAdversario + alturaRaquete){
+
+            velocidadeX = velocidadeX*(-1);        
+            
+            }
+    }
+
+    function moveBolinha() {
+
+        xBolinha = xBolinha + velocidadeX;
+        yBolinha = yBolinha + velocidadeY;
+    }
+
+    function moveRaqueteAdversario() {
+        
+        var velocidadeRaqueteAdversario = yBolinha - yRaqueteAdversario - alturaRaquete/2
+
+        yRaqueteAdversario += velocidadeRaqueteAdversario - fatorDeErro
+
+        if (numeroAleatorio > 0.5){
+        
+            if (fatorDeErro > 0) {
+
+                fatorDeErro -= 0.05
+            }
+
+        } else {
+            
+            if (fatorDeErro <= 80) {
+
+                fatorDeErro += 0.05
+            }
+
+        }
+
+        if (yRaqueteAdversario < 0) {
+
+            yRaqueteAdversario = 0
+
+        }
+
+        if (yRaqueteAdversario > (tela.getAttribute("height") - alturaRaquete)) {
+
+            yRaqueteAdversario = tela.getAttribute("height") - alturaRaquete
+
+        }    
+
+    }
+
+    function atualizaTela() {
+
+        limpaTela();
+        desenhaCirculo(xBolinha, yBolinha, raio)
+        desenhaRaqueteJogador(xRaqueteJogador, yRaqueteJogador, larguraRaquete, alturaRaquete);
+        desenhaRaqueteAdversario(xRaqueteAdversario, yRaqueteAdversario, larguraRaquete, alturaRaquete);
+        desenhaPlacar(xPlacarJogador, yPlacarJogador, pontosJogador);
+        desenhaPlacar(xPlacarAdversario, yPlacarAdversario, pontosAdversario); 
+        moveBolinha();
+        moveRaqueteAdversario();
+        detectaColisaoBorda();
+        detectaColisaoRaqueteJogador();
+        detectaColisaoRaqueteAdversario();      
+         
+    }
+
+
+    // Posição da raquete do jogador
+    var xRaqueteJogador = 0;
+    var yRaqueteJogador = 20;
+
+    // Posição da raquete do adversário
+    var xRaqueteAdversario = 590;
+    var yRaqueteAdversario = 20;
+    
+    // Parametros para cálculo de erro 
+    var numeroAleatorio = 0.6
+    var fatorDeErro = 0
+
+    // Dimensões das raquetes
+    var larguraRaquete = 10
+    var alturaRaquete = 80
+
+    // Parametros da bolinha
+    var raio = 10
+    var velocidadeX = 2
+    var velocidadeY = 2
+    var xBolinha = 300
+    var yBolinha = 200
+
+    // Placar do Adversário
+    var xPlacarAdversario = 400
+    var yPlacarAdversario = 10
+    var pontosAdversario = 0
+
+     // Placar do Jogador
+    var xPlacarJogador = 150
+    var yPlacarJogador = 10
+    var pontosJogador = 0  
+
+    document.onkeydown = leDoTeclado
+    setInterval(atualizaTela, 1);
+
+
+
+// cima = 38, baixo = 40, esquerda = 37, direita = 39 
+</script>
